@@ -1,0 +1,16 @@
+syntax: glob
+
+_Store
+.settings
+.project
+.buildpath
+.coverage
+*.pyc
+*.sw?
+*.mo
+*~
+~$*
+
+secrets.py
+logs/*.log
+static/*

@@ -1,0 +1,12 @@
+Django
+django-grappelli
+psycopg2
+django-filebrowser
+django-ldap-sync
+django-extensions
+django-debug-toolbar
+django-werkzeug
+Pillow
+coverage
+selenium
+pytest
