@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from secrets import PSQL_PASS
+from secrets import PSQL_PASS, AD_PASS
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'debug_toolbar',
-    'ldap_sync',
     'cmdb',
 ]
 
@@ -108,3 +108,10 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+
+# Active Directory
+
+AD_URI = 'ldap://kro-lev-srv-600.kronosww.com:389'
+AD_BASE = 'OU=EU,DC=KRONOSWW,DC=COM'
+AD_USER = 'CN=AD Query,OU=Service Accounts,OU=LEV,OU=DE,OU=EU,DC=KRONOSWW,DC=COM'
