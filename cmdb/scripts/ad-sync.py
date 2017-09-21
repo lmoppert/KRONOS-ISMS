@@ -86,40 +86,37 @@ def set_cookie(lc_object, pctrls, pagesize):
     return cookie
 
 
-ldap.set_option(ldap.OPT_REFERRALS, 0)
-l = ldap.initialize(AD_URI)
-l.protocol_version = 3
+def search_objects(ldap, ldapcontrol, filterstring, callback):
+    print "Searching for {}".format(filterstring)
+    cookie = True
+    while cookie:
+        print "Fetcing results"
+        msgid = ldap.search_ext(AD_BASE, SUB, filterstring,
+                                serverctrls=[ldapcontrol])
+        rtype, rdata, rmsgid, serverctrls = ldap.result3(msgid)
+        for dn, attrs in rdata:
+            callback(dn, attrs)
+        pctrls = [c for c in serverctrls
+                if c.controlType == SimplePagedResultsControl.controlType]
+        cookie = set_cookie(lc, pctrls, PAGE_SIZE)
+    print "Finished searching for {}".format(filterstring)
 
-try:
-    l.simple_bind_s(AD_USER, AD_PASS)
-except ldap.LDAPError as error:
-    exit('LDAP bind failed: {}'.format(error))
-lc = SimplePagedResultsControl(True, PAGE_SIZE, '')
 
-# Search person objects
-cookie = True
-while cookie:
-    flt = '(objectCategory=person)'
-    msgid = l.search_ext(AD_BASE, SUB, flt, serverctrls=[lc])
-    rtype, rdata, rmsgid, serverctrls = l.result3(msgid)
-    for dn, attrs in rdata:
-        process_person(dn, attrs)
-    pctrls = [c for c in serverctrls
-              if c.controlType == SimplePagedResultsControl.controlType]
-    cookie = set_cookie(lc, pctrls, PAGE_SIZE)
+def init():
+    ldap.set_option(ldap.OPT_REFERRALS, 0)
+    l = ldap.initialize(AD_URI)
+    l.protocol_version = 3
+    try:
+        l.simple_bind_s(AD_USER, AD_PASS)
+    except ldap.LDAPError as error:
+        exit('LDAP bind failed: {}'.format(error))
+    lc = SimplePagedResultsControl(True, PAGE_SIZE, '')
+    return l, lc
 
-# Search computer objects
-cookie = True
-while cookie:
-    flt = '(objectCategory=computer)'
-    msgid = l.search_ext(AD_BASE, SUB, flt, serverctrls=[lc])
-    rtype, rdata, rmsgid, serverctrls = l.result3(msgid)
-    for dn, attrs in rdata:
-        process_computer(dn, attrs)
-    pctrls = [c for c in serverctrls
-              if c.controlType == SimplePagedResultsControl.controlType]
-    cookie = set_cookie(lc, pctrls, PAGE_SIZE)
 
-# Clean up and exit
+# Main processing
+l, lc = init()
+search_objects(l, lc, '(objectCategory=person)', process_person)
+search_objects(l, lc, '(objectCategory=computer)', process_computer)
 l.unbind()
 sys.exit(0)
