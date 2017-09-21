@@ -64,6 +64,15 @@ class Software(models.Model):
     name = models.CharField(max_length=200, verbose_name=_("Software Name"))
     description = models.CharField(max_length=200,
                                    verbose_name=_("Description"))
+    workstations = models.ManyToManyField(Workstation)
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = _("Software")
+        verbose_name_plural = _("Software")
 
 
 class SPN(models.Model):

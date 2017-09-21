@@ -35,3 +35,11 @@ class WorkstationsAdmin(admin.ModelAdmin):
     search_fields = ('dnsname', 'description')
     list_filter = ('os', 'os_ver', 'os_sp')
     change_list_template = "admin/change_list_filter_sidebar.html"
+
+
+@admin.register(models.Software)
+class SoftwareAdmin(admin.ModelAdmin):
+    """Admin view for the AD Software Groups"""
+
+    list_display = ('__unicode__', 'description')
+    search_fields = ('name', 'description')

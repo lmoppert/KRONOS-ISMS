@@ -3,7 +3,7 @@ import ldap
 from binascii import hexlify
 from ldap.controls import SimplePagedResultsControl
 from isms.settings import AD_URI, AD_USER, AD_PASS, AD_BASE
-from cmdb.models import Person, Workstation
+from cmdb.models import Person, Workstation, Software
 
 PAGE_SIZE = 1000
 SUB = ldap.SCOPE_SUBTREE
@@ -79,6 +79,20 @@ def process_computer(dn, attrs):
     comp.save()
 
 
+def process_group(dn, attrs):
+    """Process a single result value"""
+    name = attrs['name'][0]
+    if 'description' in attrs:
+        description = attrs['description'][0]
+    else:
+        description = ''
+    if name[0:3] == "SW-":
+        sw, c = Software.objects.get_or_create(name=name)
+        sw.description = description
+        # sw.workstations
+        sw.ssave()
+
+
 def set_cookie(lc_object, pctrls, pagesize):
     """Push lateset cookie back into the page control."""
     cookie = pctrls[0].cookie
@@ -116,7 +130,8 @@ def init():
 
 # Main processing
 l, lc = init()
-search_objects(l, lc, '(objectCategory=person)', process_person)
-search_objects(l, lc, '(objectCategory=computer)', process_computer)
+#search_objects(l, lc, '(objectCategory=person)', process_person)
+#search_objects(l, lc, '(objectCategory=computer)', process_computer)
+search_objects(l, lc, '(objectCategory=group)', process_group)
 l.unbind()
 sys.exit(0)

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-21 10:35+0200\n"
+"POT-Creation-Date: 2017-09-21 15:46+0200\n"
 "PO-Revision-Date: 2017-09-19 15:03+0200\n"
 "Last-Translator: Lutz Moppert <lutz.moppert@kronosww.com>\n"
 "Language: de\n"
@@ -124,7 +124,7 @@ msgstr "Computer Name"
 msgid "DNS Name"
 msgstr "FQDN"
 
-#: cmdb/models.py:47
+#: cmdb/models.py:47 cmdb/models.py:66
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -147,3 +147,11 @@ msgstr "Computer"
 #: cmdb/models.py:59
 msgid "Workstations"
 msgstr "Computer"
+
+#: cmdb/models.py:64
+msgid "Software Name"
+msgstr "Software"
+
+#: cmdb/models.py:74 cmdb/models.py:75
+msgid "Software"
+msgstr "Software"
