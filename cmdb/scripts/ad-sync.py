@@ -1,0 +1,125 @@
+import sys
+import ldap
+from binascii import hexlify
+from ldap.controls import SimplePagedResultsControl
+from isms.settings import AD_URI, AD_USER, AD_PASS, AD_BASE
+from cmdb.models import Person, Workstation
+
+PAGE_SIZE = 1000
+SUB = ldap.SCOPE_SUBTREE
+
+
+def decode_SID(raw):
+    revision = int(ord(raw[0]))
+    sub_auth_count = int(ord(raw[1]))
+    ident_auth = int(hexlify(raw[2:8]), 16)
+    if ident_auth >= 4294967296:
+        ident_auth = hex(ident_auth)
+    sub_auth = ''
+    i = 0
+    while i < sub_auth_count:
+        sub_auth += '-' + str(int(hexlify(raw[11+(i*4):7+(i*4):-1]), 16))
+        i += 1
+    return 'S-' + str(revision) + '-' + str(ident_auth) + sub_auth
+
+
+def process_person(dn, attrs):
+    """Process a single result value"""
+    person, c = Person.objects.get_or_create(userid=attrs['sAMAccountName'][0])
+    person.path = attrs['distinguishedName'][0]
+    person.name = attrs['cn'][0]
+    person.sid = decode_SID(attrs['objectSid'][0])
+    if 'title' in attrs:
+        person.title = attrs['title'][0]
+    if 'employeeNumber' in attrs:
+        person.employee = attrs['employeeNumber'][0]
+    if 'c' in attrs:
+        person.countrycode = attrs['c'][0]
+    if 'co' in attrs:
+        person.country = attrs['co'][0]
+    if 'l' in attrs:
+        person.location = attrs['l'][0]
+    if 'department' in attrs:
+        person.department = attrs['department'][0]
+    if 'postalCode' in attrs:
+        person.zipcode = attrs['postalCode'][0]
+    if 'streetAddress' in attrs:
+        person.address = attrs['streetAddress'][0]
+    if 'facsimileTelephoneNumber' in attrs:
+        person.fax = attrs['facsimileTelephoneNumber'][0]
+    if 'mobile' in attrs:
+        person.mobile = attrs['mobile'][0]
+    if 'telephoneNumber' in attrs:
+        person.phone = attrs['telephoneNumber'][0]
+    if 'mail' in attrs:
+        person.mail = attrs['mail'][0]
+    flags = int(attrs['userAccountControl'][0])
+    person.active = not(flags & 0b10)
+    person.unlocked = not(flags & 0b10000)
+    person.pwex = not(flags & 0b10000000000000000)
+    person.pwsv = not(flags & 0b100000000000000000000000)
+    person.save()
+
+
+def process_computer(dn, attrs):
+    """Process a single result value"""
+    comp, c = Workstation.objects.get_or_create(name=attrs['name'][0])
+    comp.path = attrs['distinguishedName'][0]
+    comp.sid = decode_SID(attrs['objectSid'][0])
+    if 'dNSHostName' in attrs:
+        comp.dnsname = attrs['dNSHostName'][0]
+    if 'description' in attrs:
+        comp.description = attrs['description'][0]
+    if 'operatingSystem' in attrs:
+        comp.os = attrs['operatingSystem'][0]
+    if 'operatingSystemVersion' in attrs:
+        comp.os_ver = attrs['operatingSystemVersion'][0]
+    if 'operatingSystemServicePack' in attrs:
+        comp.os_sp = attrs['operatingSystemServicePack'][0]
+    comp.save()
+
+
+def set_cookie(lc_object, pctrls, pagesize):
+    """Push lateset cookie back into the page control."""
+    cookie = pctrls[0].cookie
+    lc_object.cookie = cookie
+    return cookie
+
+
+ldap.set_option(ldap.OPT_REFERRALS, 0)
+l = ldap.initialize(AD_URI)
+l.protocol_version = 3
+
+try:
+    l.simple_bind_s(AD_USER, AD_PASS)
+except ldap.LDAPError as error:
+    exit('LDAP bind failed: {}'.format(error))
+lc = SimplePagedResultsControl(True, PAGE_SIZE, '')
+
+# Search person objects
+cookie = True
+while cookie:
+    flt = '(objectCategory=person)'
+    msgid = l.search_ext(AD_BASE, SUB, flt, serverctrls=[lc])
+    rtype, rdata, rmsgid, serverctrls = l.result3(msgid)
+    for dn, attrs in rdata:
+        process_person(dn, attrs)
+    pctrls = [c for c in serverctrls
+              if c.controlType == SimplePagedResultsControl.controlType]
+    cookie = set_cookie(lc, pctrls, PAGE_SIZE)
+
+# Search computer objects
+cookie = True
+while cookie:
+    flt = '(objectCategory=computer)'
+    msgid = l.search_ext(AD_BASE, SUB, flt, serverctrls=[lc])
+    rtype, rdata, rmsgid, serverctrls = l.result3(msgid)
+    for dn, attrs in rdata:
+        process_computer(dn, attrs)
+    pctrls = [c for c in serverctrls
+              if c.controlType == SimplePagedResultsControl.controlType]
+    cookie = set_cookie(lc, pctrls, PAGE_SIZE)
+
+# Clean up and exit
+l.unbind()
+sys.exit(0)

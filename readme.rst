@@ -35,4 +35,15 @@ folgende System in Betracht gezogen:
     - Meetingräume
     - Parkplätze
     - Prozesse (TQM)
+4) Check_MK Monitoring
+    - Computer (Server)
+    - Service
+    - Datenbank
+    - Drucker
 
+Und weitere Systeme kommen noch in Betracht:
+- Qualys
+- LogRhythm
+- TK-Anlage
+- McAfee
+- vCenter

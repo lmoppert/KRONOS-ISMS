@@ -1,46 +1,69 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class Person(models.Model):
     """Representation of a person object from AD"""
 
-    path = models.CharField(max_length=400)         # distinguishedName
-    userid = models.CharField(max_length=50)        # sAMAccountName
-    title = models.CharField(max_length=200)        # title
-    name = models.CharField(max_length=200)         # cn
-    department = models.CharField(max_length=200)   # department
-    employee = models.CharField(max_length=50)      # employeenumber
-    countrycode = models.CharField(max_length=5)    # c
-    country = models.CharField(max_length=200)      # co
-    location = models.CharField(max_length=50)      # l
-    address = models.CharField(max_length=400)      # postalAddress
-    mail = models.CharField(max_length=200)         # mail
-    fax = models.CharField(max_length=50)           # facsimileTelephoneNumber
-    mobile = models.CharField(max_length=50)        # mobile
-    phone = models.CharField(max_length=50)         # telephoneNumber
-    sid = models.CharField(max_length=100)          # objectSID
+    path = models.CharField(max_length=400, verbose_name=_("LDAP-Path"))
+    userid = models.CharField(max_length=50, verbose_name=_("User-ID"))
+    title = models.CharField(max_length=200, verbose_name=_("Title"))
+    name = models.CharField(max_length=200, verbose_name=_("Full Name"))
+    department = models.CharField(max_length=200, verbose_name=_("Department"))
+    employee = models.CharField(max_length=50, verbose_name=_("Employee No."))
+    countrycode = models.CharField(max_length=5, verbose_name=_("Countrycode"))
+    country = models.CharField(max_length=200, verbose_name=_("Country"))
+    location = models.CharField(max_length=50, verbose_name=_("Location"))
+    address = models.CharField(max_length=400, verbose_name=_("Address"))
+    zipcode = models.CharField(max_length=400, default="51373",
+                               verbose_name=_("Address"))
+    mail = models.CharField(max_length=200, verbose_name=_("Mail"))
+    fax = models.CharField(max_length=50, verbose_name=_("Fax"))
+    mobile = models.CharField(max_length=50, verbose_name=_("Mobile"))
+    phone = models.CharField(max_length=50, verbose_name=_("Phone"))
+    sid = models.CharField(max_length=100, verbose_name=_("SID"))
+    active = models.BooleanField(default=True, verbose_name=_("Active"))
+    unlocked = models.BooleanField(default=True, verbose_name=_("Unlocked"))
+    pwsv = models.BooleanField(default=True, verbose_name=_("PW Still Valid"))
+    pwex = models.BooleanField(default=True, verbose_name=_("PW Expires"))
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.userid)
+
+    class Meta:
+        verbose_name = _("Person")
+        verbose_name_plural = _("Persons")
 
 
 class Workstation(models.Model):
     """Representation of a workstation (laptop or desktop)"""
 
-    path = models.CharField(max_length=400)         # distinguishedName
-    name = models.CharField(max_length=200)         # cn
-    dnsname = models.CharField(max_length=200)      # dNSHostName
-    description = models.CharField(max_length=200)  # description
-    location = models.CharField(max_length=50)      # location
-    os = models.CharField(max_length=200)           # operatingSystem
-    os_ver = models.CharField(max_length=200)       # operatingSystemVersion
-    os_sp = models.CharField(max_length=200)        # operatingSystemServicePack
-    sid = models.CharField(max_length=100)          # objectSID
+    path = models.CharField(max_length=400, verbose_name=_("LDAP-Path"))
+    name = models.CharField(max_length=200, verbose_name=_("Computer Name"))
+    dnsname = models.CharField(max_length=200, verbose_name=_("DNS Name"))
+    description = models.CharField(max_length=200,
+                                   verbose_name=_("Description"))
+    os = models.CharField(max_length=200, verbose_name=_("OS"))
+    os_ver = models.CharField(max_length=200, verbose_name=_("OS Version"))
+    os_sp = models.CharField(max_length=200, verbose_name=_("OS Service Pack"))
+    sid = models.CharField(max_length=100, verbose_name=_("SID"))
 
     def __unicode__(self):
-        return self.dnsname
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = _("Workstation")
+        verbose_name_plural = _("Workstations")
+
+
+class Software(models.Model):
+    """This holds information about Software installed via Altiris"""
+    name = models.CharField(max_length=200, verbose_name=_("Software Name"))
+    description = models.CharField(max_length=200,
+                                   verbose_name=_("Description"))
 
 
 class SPN(models.Model):

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from secrets import PSQL_PASS, AD_PASS
+from django.utils.translation import ugettext_lazy as _
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,7 +35,6 @@ INTERNAL_IPS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'django_werkzeug',
     'grappelli',
     'filebrowser',
     'django.contrib.admin',
@@ -98,6 +99,11 @@ DATABASES = {
 
 LANGUAGE_CODE = 'de-de'
 TIME_ZONE = 'Europe/Berlin'
+LANGUAGES = [
+    ('en', _('English')),
+    ('de', _('German')),
+]
+
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
