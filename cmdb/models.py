@@ -4,6 +4,20 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 
+class ComputerCategory(models.Model):
+    """Categorization for Computers like server, workstation etc."""
+
+    name = models.CharField(max_length=200, verbose_name=_("Category Name"))
+    token = models.CharField(max_length=3, verbose_name=_("Category Token"))
+
+    def __unicode__(self):
+        return "{} - {}".format(self.token, self.name)
+
+    class Meta:
+        verbose_name = _("Computer Category")
+        verbose_name_plural = _("Computer Categories")
+
+
 class Person(models.Model):
     """Representation of a person object from AD"""
 
@@ -37,6 +51,13 @@ class Person(models.Model):
         verbose_name_plural = _("Persons")
 
 
+class SPN(models.Model):
+    """Collection of Service Principal Names for a User"""
+
+    name = models.CharField(max_length=200)         # servicePrincipalName
+    userid = models.ForeignKey(Person)
+
+
 class Workstation(models.Model):
     """Representation of a workstation (laptop or desktop)"""
 
@@ -49,6 +70,7 @@ class Workstation(models.Model):
     os_ver = models.CharField(max_length=200, verbose_name=_("OS Version"))
     os_sp = models.CharField(max_length=200, verbose_name=_("OS Service Pack"))
     sid = models.CharField(max_length=100, verbose_name=_("SID"))
+    category = models.ForeignKey(ComputerCategory, null=True)
 
     def __unicode__(self):
         return self.name
@@ -73,10 +95,3 @@ class Software(models.Model):
         ordering = ('name',)
         verbose_name = _("Software")
         verbose_name_plural = _("Software")
-
-
-class SPN(models.Model):
-    """Collection of Service Principal Names for a USer"""
-
-    name = models.CharField(max_length=200)         # servicePrincipalName
-    userid = models.ForeignKey(Person)

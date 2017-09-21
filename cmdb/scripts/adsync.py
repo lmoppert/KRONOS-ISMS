@@ -3,7 +3,7 @@ import ldap
 from binascii import hexlify
 from ldap.controls import SimplePagedResultsControl
 from isms.settings import AD_URI, AD_USER, AD_PASS, AD_BASE
-from cmdb.models import Person, Workstation, Software
+from cmdb.models import ComputerCategory, Person, Software, Workstation
 
 PAGE_SIZE = 1000
 SUB = ldap.SCOPE_SUBTREE
@@ -63,7 +63,8 @@ def process_person(dn, attrs):
 
 def process_computer(dn, attrs):
     """Process a single result value"""
-    comp, c = Workstation.objects.get_or_create(name=attrs['name'][0])
+    name = attrs['name'][0]
+    comp, c = Workstation.objects.get_or_create(name=name)
     comp.path = attrs['distinguishedName'][0]
     comp.sid = decode_SID(attrs['objectSid'][0])
     if 'dNSHostName' in attrs:
@@ -76,6 +77,11 @@ def process_computer(dn, attrs):
         comp.os_ver = attrs['operatingSystemVersion'][0]
     if 'operatingSystemServicePack' in attrs:
         comp.os_sp = attrs['operatingSystemServicePack'][0]
+    parts = name.split("-")
+    if len(name) == 15 and len(parts) == 4:
+        comp.category, c = ComputerCategory.objects.get_or_create(token=parts[2])
+    elif len(name) == 11 and len(parts) == 3:
+        comp.category, c = ComputerCategory.objects.get_or_create(token=parts[1])
     comp.save()
 
 
@@ -89,8 +95,14 @@ def process_group(dn, attrs):
     if name[0:3] == "SW-":
         sw, c = Software.objects.get_or_create(name=name)
         sw.description = description
-        # sw.workstations
-        sw.ssave()
+        if 'member' in attrs:
+            for member in attrs['member']:
+                try:
+                    ws = Workstation.objects.get(path=member)
+                    sw.workstations.add(ws)
+                except:
+                    pass
+        sw.save()
 
 
 def set_cookie(lc_object, pctrls, pagesize):
@@ -130,8 +142,8 @@ def init():
 
 # Main processing
 l, lc = init()
-#search_objects(l, lc, '(objectCategory=person)', process_person)
-#search_objects(l, lc, '(objectCategory=computer)', process_computer)
+search_objects(l, lc, '(objectCategory=person)', process_person)
+search_objects(l, lc, '(objectCategory=computer)', process_computer)
 search_objects(l, lc, '(objectCategory=group)', process_group)
 l.unbind()
 sys.exit(0)

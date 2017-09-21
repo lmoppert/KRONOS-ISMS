@@ -33,7 +33,7 @@ class WorkstationsAdmin(admin.ModelAdmin):
 
     list_display = ('__unicode__', 'os', 'os_ver', 'description')
     search_fields = ('dnsname', 'description')
-    list_filter = ('os', 'os_ver', 'os_sp')
+    list_filter = ('category', 'os', 'os_ver', 'os_sp')
     change_list_template = "admin/change_list_filter_sidebar.html"
 
 
@@ -43,3 +43,11 @@ class SoftwareAdmin(admin.ModelAdmin):
 
     list_display = ('__unicode__', 'description')
     search_fields = ('name', 'description')
+
+
+@admin.register(models.ComputerCategory)
+class ComputerCategoryAdmin(admin.ModelAdmin):
+    """Admin view for Computer Categories"""
+
+    list_display = ('token', 'name')
+    search_fields = ('name', 'token')
