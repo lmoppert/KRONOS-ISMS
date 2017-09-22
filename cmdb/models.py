@@ -4,6 +4,40 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 
+class Country(models.Model):
+    """List of countries for use in addresses."""
+
+    name = models.CharField(max_length=200, verbose_name=_("Country Name"))
+    token = models.CharField(max_length=3, verbose_name=_("Country Token"))
+
+    def __unicode__(self):
+        return "{} - {}".format(self.token, self.name)
+
+    class Meta:
+        verbose_name = _("Country")
+        verbose_name_plural = _("Countries")
+
+
+class Location(models.Model):
+    """Categorization for the location (city) of assets."""
+
+    name = models.CharField(max_length=200, verbose_name=_("Location Name"))
+    token = models.CharField(max_length=3, verbose_name=_("Location Token"))
+    zipcode = models.CharField(max_length=15, null=True, verbose_name=_("ZIP"))
+    address = models.CharField(max_length=400, null=True,
+                               verbose_name=_("Address"))
+    # country = models.CharField(max_length=200, null=True,
+    #                            verbose_name=_("Country"))
+    country = models.ForeignKey(Country, null=True, verbose_name=_("Country"))
+
+    def __unicode__(self):
+        return "{} - {}".format(self.token, self.name)
+
+    class Meta:
+        verbose_name = _("Office")
+        verbose_name_plural = _("Offices")
+
+
 class ComputerCategory(models.Model):
     """Categorization for Computers like server, workstation etc."""
 
@@ -23,25 +57,24 @@ class Person(models.Model):
 
     path = models.CharField(max_length=400, verbose_name=_("LDAP-Path"))
     userid = models.CharField(max_length=50, verbose_name=_("User-ID"))
-    title = models.CharField(max_length=200, verbose_name=_("Title"))
-    name = models.CharField(max_length=200, verbose_name=_("Full Name"))
-    department = models.CharField(max_length=200, verbose_name=_("Department"))
-    employee = models.CharField(max_length=50, verbose_name=_("Employee No."))
-    countrycode = models.CharField(max_length=5, verbose_name=_("Countrycode"))
-    country = models.CharField(max_length=200, verbose_name=_("Country"))
-    location = models.CharField(max_length=50, verbose_name=_("Location"))
-    address = models.CharField(max_length=400, verbose_name=_("Address"))
-    zipcode = models.CharField(max_length=400, default="51373",
-                               verbose_name=_("Address"))
-    mail = models.CharField(max_length=200, verbose_name=_("Mail"))
-    fax = models.CharField(max_length=50, verbose_name=_("Fax"))
-    mobile = models.CharField(max_length=50, verbose_name=_("Mobile"))
-    phone = models.CharField(max_length=50, verbose_name=_("Phone"))
     sid = models.CharField(max_length=100, verbose_name=_("SID"))
+    name = models.CharField(max_length=200, verbose_name=_("Full Name"))
+    title = models.CharField(max_length=200, null=True, verbose_name=_("Title"))
+    department = models.CharField(max_length=200, null=True,
+                                  verbose_name=_("Department"))
+    employee = models.CharField(max_length=50, null=True,
+                                verbose_name=_("Employee No."))
+    mail = models.CharField(max_length=200, null=True, verbose_name=_("Mail"))
+    fax = models.CharField(max_length=50, null=True, verbose_name=_("Fax"))
+    mobile = models.CharField(max_length=50, null=True,
+                              verbose_name=_("Mobile"))
+    phone = models.CharField(max_length=50, null=True, verbose_name=_("Phone"))
+    # Flags and relations
     active = models.BooleanField(default=True, verbose_name=_("Active"))
     unlocked = models.BooleanField(default=True, verbose_name=_("Unlocked"))
     pwsv = models.BooleanField(default=True, verbose_name=_("PW Still Valid"))
     pwex = models.BooleanField(default=True, verbose_name=_("PW Expires"))
+    office = models.ForeignKey(Location, null=True, verbose_name=_("Office"))
 
     def __unicode__(self):
         return "{} ({})".format(self.name, self.userid)
@@ -64,13 +97,17 @@ class Workstation(models.Model):
     path = models.CharField(max_length=400, verbose_name=_("LDAP-Path"))
     name = models.CharField(max_length=200, verbose_name=_("Computer Name"))
     dnsname = models.CharField(max_length=200, verbose_name=_("DNS Name"))
-    description = models.CharField(max_length=200,
-                                   verbose_name=_("Description"))
-    os = models.CharField(max_length=200, verbose_name=_("OS"))
-    os_ver = models.CharField(max_length=200, verbose_name=_("OS Version"))
-    os_sp = models.CharField(max_length=200, verbose_name=_("OS Service Pack"))
     sid = models.CharField(max_length=100, verbose_name=_("SID"))
-    category = models.ForeignKey(ComputerCategory, null=True)
+    description = models.CharField(max_length=200, null=True,
+                                   verbose_name=_("Description"))
+    os = models.CharField(max_length=200, null=True, verbose_name=_("OS"))
+    os_ver = models.CharField(max_length=200, null=True,
+                              verbose_name=_("OS Version"))
+    os_sp = models.CharField(max_length=200, null=True,
+                             verbose_name=_("OS Service Pack"))
+    category = models.ForeignKey(ComputerCategory, null=True,
+                                 verbose_name=_("Computer Category"))
+    location = models.ForeignKey(Location, null=True, verbose_name=_("Office"))
 
     def __unicode__(self):
         return self.name
@@ -86,7 +123,8 @@ class Software(models.Model):
     name = models.CharField(max_length=200, verbose_name=_("Software Name"))
     description = models.CharField(max_length=200,
                                    verbose_name=_("Description"))
-    workstations = models.ManyToManyField(Workstation)
+    workstations = models.ManyToManyField(Workstation,
+                                          verbose_name=_("Computer Name"))
 
     def __unicode__(self):
         return self.name

@@ -3,7 +3,8 @@ import ldap
 from binascii import hexlify
 from ldap.controls import SimplePagedResultsControl
 from isms.settings import AD_URI, AD_USER, AD_PASS, AD_BASE
-from cmdb.models import ComputerCategory, Person, Software, Workstation
+from cmdb.models import (ComputerCategory, Person, Software, Workstation,
+                         Location, Country)
 
 PAGE_SIZE = 1000
 SUB = ldap.SCOPE_SUBTREE
@@ -23,6 +24,27 @@ def decode_SID(raw):
     return 'S-' + str(revision) + '-' + str(ident_auth) + sub_auth
 
 
+def process_office(attrs):
+    """Search for an office, create it if nothing is found and return the
+    coresponding object."""
+    loc, c = Location.objects.get_or_create(
+        token=attrs['physicalDeliveryOfficeName'][0])
+    if 'l' in attrs and not loc.name:
+        loc.name = attrs['l'][0]
+    if 'postalCode' in attrs and not loc.zipcode:
+        loc.zipcode = attrs['postalCode'][0]
+    if 'streetAddress' in attrs and not loc.address:
+        loc.address = attrs['streetAddress'][0]
+    if 'c' in attrs and not loc.country:
+        co, c = Country.objects.get_or_create(token=attrs['c'][0])
+        if 'co' in attrs and c:
+            co.name = attrs['co'][0]
+            co.save()
+        loc.country = co
+    loc.save()
+    return loc
+
+
 def process_person(dn, attrs):
     """Process a single result value"""
     person, c = Person.objects.get_or_create(userid=attrs['sAMAccountName'][0])
@@ -33,18 +55,10 @@ def process_person(dn, attrs):
         person.title = attrs['title'][0]
     if 'employeeNumber' in attrs:
         person.employee = attrs['employeeNumber'][0]
-    if 'c' in attrs:
-        person.countrycode = attrs['c'][0]
-    if 'co' in attrs:
-        person.country = attrs['co'][0]
-    if 'l' in attrs:
-        person.location = attrs['l'][0]
+    if 'physicalDeliveryOfficeName' in attrs:
+        person.office = process_office(attrs)
     if 'department' in attrs:
         person.department = attrs['department'][0]
-    if 'postalCode' in attrs:
-        person.zipcode = attrs['postalCode'][0]
-    if 'streetAddress' in attrs:
-        person.address = attrs['streetAddress'][0]
     if 'facsimileTelephoneNumber' in attrs:
         person.fax = attrs['facsimileTelephoneNumber'][0]
     if 'mobile' in attrs:
@@ -53,6 +67,11 @@ def process_person(dn, attrs):
         person.phone = attrs['telephoneNumber'][0]
     if 'mail' in attrs:
         person.mail = attrs['mail'][0]
+    # Replace by ForeignKey
+    if 'c' in attrs and 'co' in attrs:
+        person.countrycode = attrs['c'][0]
+        person.country = attrs['co'][0]
+    # Examine User Account Control Flags and set coresponding values
     flags = int(attrs['userAccountControl'][0])
     person.active = not(flags & 0b10)
     person.unlocked = not(flags & 0b10000)
@@ -64,25 +83,27 @@ def process_person(dn, attrs):
 def process_computer(dn, attrs):
     """Process a single result value"""
     name = attrs['name'][0]
-    comp, c = Workstation.objects.get_or_create(name=name)
-    comp.path = attrs['distinguishedName'][0]
-    comp.sid = decode_SID(attrs['objectSid'][0])
+    cp, c = Workstation.objects.get_or_create(name=name)
+    cp.path = attrs['distinguishedName'][0]
+    cp.sid = decode_SID(attrs['objectSid'][0])
     if 'dNSHostName' in attrs:
-        comp.dnsname = attrs['dNSHostName'][0]
+        cp.dnsname = attrs['dNSHostName'][0]
     if 'description' in attrs:
-        comp.description = attrs['description'][0]
+        cp.description = attrs['description'][0]
     if 'operatingSystem' in attrs:
-        comp.os = attrs['operatingSystem'][0]
+        cp.os = attrs['operatingSystem'][0]
     if 'operatingSystemVersion' in attrs:
-        comp.os_ver = attrs['operatingSystemVersion'][0]
+        cp.os_ver = attrs['operatingSystemVersion'][0]
     if 'operatingSystemServicePack' in attrs:
-        comp.os_sp = attrs['operatingSystemServicePack'][0]
+        cp.os_sp = attrs['operatingSystemServicePack'][0]
     parts = name.split("-")
     if len(name) == 15 and len(parts) == 4:
-        comp.category, c = ComputerCategory.objects.get_or_create(token=parts[2])
+        cp.category, c = ComputerCategory.objects.get_or_create(token=parts[2])
+        cp.location, c = Location.objects.get_or_create(token=parts[1])
     elif len(name) == 11 and len(parts) == 3:
-        comp.category, c = ComputerCategory.objects.get_or_create(token=parts[1])
-    comp.save()
+        cp.category, c = ComputerCategory.objects.get_or_create(token=parts[1])
+        cp.location, c = Location.objects.get_or_create(token=parts[0])
+    cp.save()
 
 
 def process_group(dn, attrs):
@@ -113,19 +134,19 @@ def set_cookie(lc_object, pctrls, pagesize):
 
 
 def search_objects(ldap, ldapcontrol, filterstring, callback):
-    print "Searching for {}".format(filterstring)
+    print("Searching for {}".format(filterstring))
     cookie = True
     while cookie:
-        print "Fetcing results"
+        print("Fetcing results")
         msgid = ldap.search_ext(AD_BASE, SUB, filterstring,
                                 serverctrls=[ldapcontrol])
         rtype, rdata, rmsgid, serverctrls = ldap.result3(msgid)
         for dn, attrs in rdata:
             callback(dn, attrs)
         pctrls = [c for c in serverctrls
-                if c.controlType == SimplePagedResultsControl.controlType]
+                  if c.controlType == SimplePagedResultsControl.controlType]
         cookie = set_cookie(lc, pctrls, PAGE_SIZE)
-    print "Finished searching for {}".format(filterstring)
+    print("Finished searching for {}".format(filterstring))
 
 
 def init():
@@ -142,8 +163,8 @@ def init():
 
 # Main processing
 l, lc = init()
-search_objects(l, lc, '(objectCategory=person)', process_person)
+# search_objects(l, lc, '(objectCategory=person)', process_person)
 search_objects(l, lc, '(objectCategory=computer)', process_computer)
-search_objects(l, lc, '(objectCategory=group)', process_group)
+# search_objects(l, lc, '(objectCategory=group)', process_group)
 l.unbind()
 sys.exit(0)

@@ -48,3 +48,15 @@ Und weitere Systeme kommen noch in Betracht:
 - TK-Anlage
 - McAfee
 - vCenter
+- DHCP Server (Location of PC)
+
+
+Synchronisierung
+----------------
+Für die grundlegenden Daten genügt es, diese einmal pro Tag zu synchronisieren,
+aber ein paar Werte unterliegen häufigen änderungen und sollten öfter
+abgeglichen werden:
+
+- User locked
+- PC location (DHCP)
+

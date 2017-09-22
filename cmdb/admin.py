@@ -13,17 +13,14 @@ class PersonsAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,          {'fields': ['path', 'userid', 'sid']}),
         (_('Personal'), {'fields': ['name', 'title', 'department',
-                                    'employee', 'countrycode']}),
-        (_('Address'),  {'fields': ['address', 'zipcode', 'location',
-                                    'country']}),
+                                    'employee', 'office']}),
         (_('Contact'),  {'fields': ['mail', 'phone', 'mobile', 'fax']}),
         (_('Flags'),    {'fields': ['active', 'unlocked', 'pwsv', 'pwex']}),
     ]
     list_display = ('__unicode__', 'department', 'employee', 'phone', 'mobile',
-                    'fax', 'address', 'active', 'unlocked', 'pwsv', 'pwex')
+                    'fax', 'active', 'unlocked', 'pwsv', 'pwex')
     search_fields = ('userid', 'name', 'department', 'employee', 'phone')
-    list_filter = ('countrycode', 'location', 'active', 'unlocked', 'pwsv',
-                   'pwex')
+    list_filter = ('office', 'active', 'unlocked', 'pwsv', 'pwex')
     change_list_template = "admin/change_list_filter_sidebar.html"
 
 
@@ -31,9 +28,14 @@ class PersonsAdmin(admin.ModelAdmin):
 class WorkstationsAdmin(admin.ModelAdmin):
     """Admin view for the AD workstations"""
 
+    fieldsets = [
+        (None,       {'fields': ['path', 'name', 'dnsname', 'sid']}),
+        (_('Class'), {'fields': ['category', 'location', 'description']}),
+        (_('OS'),    {'fields': ['os', 'os_ver', 'os_sp']}),
+    ]
     list_display = ('__unicode__', 'os', 'os_ver', 'description')
     search_fields = ('dnsname', 'description')
-    list_filter = ('category', 'os', 'os_ver', 'os_sp')
+    list_filter = ('location', 'category', 'os', 'os_ver', 'os_sp')
     change_list_template = "admin/change_list_filter_sidebar.html"
 
 
@@ -48,6 +50,22 @@ class SoftwareAdmin(admin.ModelAdmin):
 @admin.register(models.ComputerCategory)
 class ComputerCategoryAdmin(admin.ModelAdmin):
     """Admin view for Computer Categories"""
+
+    list_display = ('token', 'name')
+    search_fields = ('name', 'token')
+
+
+@admin.register(models.Location)
+class LocationAdmin(admin.ModelAdmin):
+    """Admin view for Asset Locations"""
+
+    list_display = ('token', 'address', 'zipcode', 'name', 'country')
+    search_fields = ('name', 'token')
+
+
+@admin.register(models.Country)
+class CountryAdmin(admin.ModelAdmin):
+    """Admin view for Asset Countries"""
 
     list_display = ('token', 'name')
     search_fields = ('name', 'token')
