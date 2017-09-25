@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-22 12:09+0200\n"
+"POT-Creation-Date: 2017-09-25 16:57+0200\n"
 "PO-Revision-Date: 2017-09-19 15:03+0200\n"
 "Last-Translator: Lutz Moppert <lutz.moppert@kronosww.com>\n"
 "Language: de\n"
@@ -16,186 +16,194 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:15
+#: cmdb/admin.py:15
 msgid "Personal"
 msgstr "Persönlich"
 
-#: admin.py:17
+#: cmdb/admin.py:17
 msgid "Contact"
 msgstr "Kontaktdaten"
 
-#: admin.py:18
+#: cmdb/admin.py:18
 msgid "Flags"
 msgstr "Register"
 
-#: admin.py:33
+#: cmdb/admin.py:33
 msgid "Class"
-msgstr ""
+msgstr "Klassifizierung"
 
-#: admin.py:34 models.py:103
+#: cmdb/admin.py:34 cmdb/models.py:103
 msgid "OS"
 msgstr "Betriebssystem"
 
-#: apps.py:10
+#: cmdb/apps.py:10
 msgid "CMDB"
 msgstr "CMDB"
 
-#: models.py:10
+#: cmdb/models.py:10
 msgid "Country Name"
 msgstr "Land"
 
-#: models.py:11
+#: cmdb/models.py:11
 msgid "Country Token"
 msgstr "Ländercode"
 
-#: models.py:17 models.py:31
+#: cmdb/models.py:17 cmdb/models.py:31
 msgid "Country"
 msgstr "Land"
 
-#: models.py:18
+#: cmdb/models.py:18
 msgid "Countries"
 msgstr "Länder"
 
-#: models.py:24
+#: cmdb/models.py:24
 msgid "Location Name"
 msgstr "Niederlassung"
 
-#: models.py:25
+#: cmdb/models.py:25
 msgid "Location Token"
 msgstr "Kürzel"
 
-#: models.py:26
+#: cmdb/models.py:26
 msgid "ZIP"
 msgstr "PLZ"
 
-#: models.py:28
+#: cmdb/models.py:28
 msgid "Address"
 msgstr "Adresse"
 
-#: models.py:37 models.py:77
+#: cmdb/models.py:37 cmdb/models.py:77 cmdb/models.py:110
 msgid "Office"
 msgstr "Filiale"
 
-#: models.py:38
+#: cmdb/models.py:38
 msgid "Offices"
 msgstr "Filialen"
 
-#: models.py:44
+#: cmdb/models.py:44
 msgid "Category Name"
 msgstr "Kategorie Name"
 
-#: models.py:45
+#: cmdb/models.py:45
 msgid "Category Token"
 msgstr "Kategorie"
 
-#: models.py:51
+#: cmdb/models.py:51 cmdb/models.py:109
 msgid "Computer Category"
 msgstr "Kategorie"
 
-#: models.py:52
+#: cmdb/models.py:52
 msgid "Computer Categories"
 msgstr "Kategorien"
 
-#: models.py:58 models.py:97
+#: cmdb/models.py:58 cmdb/models.py:97
 msgid "LDAP-Path"
 msgstr "LDAP Pfad"
 
-#: models.py:59
+#: cmdb/models.py:59
 msgid "User-ID"
 msgstr "User-ID"
 
-#: models.py:60 models.py:100
+#: cmdb/models.py:60 cmdb/models.py:100
 msgid "SID"
 msgstr "SID"
 
-#: models.py:61
+#: cmdb/models.py:61
 msgid "Full Name"
 msgstr "Name"
 
-#: models.py:62
+#: cmdb/models.py:62
 msgid "Title"
 msgstr "Titel"
 
-#: models.py:64
+#: cmdb/models.py:64
 msgid "Department"
 msgstr "Abteilung"
 
-#: models.py:66
+#: cmdb/models.py:66
 msgid "Employee No."
 msgstr "Personalnummer"
 
-#: models.py:67
+#: cmdb/models.py:67
 msgid "Mail"
 msgstr "E-Mail"
 
-#: models.py:68
+#: cmdb/models.py:68
 msgid "Fax"
 msgstr "Fax"
 
-#: models.py:70
+#: cmdb/models.py:70
 msgid "Mobile"
 msgstr "Mobil"
 
-#: models.py:71
+#: cmdb/models.py:71
 msgid "Phone"
 msgstr "Telefon"
 
-#: models.py:73
+#: cmdb/models.py:73
 msgid "Active"
 msgstr "Aktiv"
 
-#: models.py:74
+#: cmdb/models.py:74
 msgid "Unlocked"
 msgstr "Freigegeben"
 
-#: models.py:75
+#: cmdb/models.py:75
 msgid "PW Still Valid"
 msgstr "PW Gültig"
 
-#: models.py:76
+#: cmdb/models.py:76
 msgid "PW Expires"
 msgstr "PW Verfällt"
 
-#: models.py:83
+#: cmdb/models.py:83
 msgid "Person"
 msgstr "Person"
 
-#: models.py:84
+#: cmdb/models.py:84
 msgid "Persons"
 msgstr "Personen"
 
-#: models.py:98
+#: cmdb/models.py:98 cmdb/models.py:127
 msgid "Computer Name"
 msgstr "Computer Name"
 
-#: models.py:99
+#: cmdb/models.py:99
 msgid "DNS Name"
 msgstr "FQDN"
 
-#: models.py:102 models.py:123
+#: cmdb/models.py:102 cmdb/models.py:125 cmdb/models.py:142
 msgid "Description"
 msgstr "Beschreibung"
 
-#: models.py:105
+#: cmdb/models.py:105
 msgid "OS Version"
 msgstr "BS Version"
 
-#: models.py:107
+#: cmdb/models.py:107
 msgid "OS Service Pack"
 msgstr "Betriebssystem Patch"
 
-#: models.py:115
+#: cmdb/models.py:117
 msgid "Workstation"
 msgstr "Computer"
 
-#: models.py:116
+#: cmdb/models.py:118
 msgid "Workstations"
 msgstr "Computer"
 
-#: models.py:121
+#: cmdb/models.py:123 cmdb/models.py:140
 msgid "Software Name"
 msgstr "Software"
 
-#: models.py:131 models.py:132
+#: cmdb/models.py:134 cmdb/models.py:135
 msgid "Software"
 msgstr "Software"
+
+#: cmdb/models.py:149
+msgid "Printer"
+msgstr "Drucker"
+
+#: cmdb/models.py:150
+msgid "Printers"
+msgstr "Drucker"

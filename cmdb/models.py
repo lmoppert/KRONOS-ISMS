@@ -133,3 +133,18 @@ class Software(models.Model):
         ordering = ('name',)
         verbose_name = _("Software")
         verbose_name_plural = _("Software")
+
+
+class Printer(models.Model):
+    """This holds information about Printers"""
+    name = models.CharField(max_length=200, verbose_name=_("Software Name"))
+    description = models.CharField(max_length=200,
+                                   verbose_name=_("Description"))
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = _("Printer")
+        verbose_name_plural = _("Printers")

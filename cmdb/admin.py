@@ -47,6 +47,14 @@ class SoftwareAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
 
 
+@admin.register(models.Printer)
+class PrinterAdmin(admin.ModelAdmin):
+    """Admin view for the AD Printer Groups"""
+
+    list_display = ('__unicode__', 'description')
+    search_fields = ('name', 'description')
+
+
 @admin.register(models.ComputerCategory)
 class ComputerCategoryAdmin(admin.ModelAdmin):
     """Admin view for Computer Categories"""

@@ -4,7 +4,7 @@ from binascii import hexlify
 from ldap.controls import SimplePagedResultsControl
 from isms.settings import AD_URI, AD_USER, AD_PASS, AD_BASE
 from cmdb.models import (ComputerCategory, Person, Software, Workstation,
-                         Location, Country)
+                         Location, Country, Printer)
 
 PAGE_SIZE = 1000
 SUB = ldap.SCOPE_SUBTREE
@@ -124,6 +124,9 @@ def process_group(dn, attrs):
                 except:
                     pass
         sw.save()
+    if 'Printers' in dn:
+        pr, c = Printer.objects.get_or_create(name=name)
+        pr.description = description
 
 
 def set_cookie(lc_object, pctrls, pagesize):
@@ -163,8 +166,8 @@ def init():
 
 # Main processing
 l, lc = init()
-# search_objects(l, lc, '(objectCategory=person)', process_person)
+search_objects(l, lc, '(objectCategory=person)', process_person)
 search_objects(l, lc, '(objectCategory=computer)', process_computer)
-# search_objects(l, lc, '(objectCategory=group)', process_group)
+search_objects(l, lc, '(objectCategory=group)', process_group)
 l.unbind()
 sys.exit(0)
